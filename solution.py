@@ -3,59 +3,26 @@ from collections import deque
 
 class Solution:
     def orangesRotting(self, grid: List[List[int]]) -> int:
-        if not grid:
-            return -1
-
-        rows = len(grid)
-        cols = len(grid[0])
-        visited = set()
-        min_time = 0
-
-        def bfs(r, c) -> int:
-            fresh = set()
-            rotten = set()
-
-            total = 0
-
-            queue = deque()
-            queue.append((r, c))
-            
-            while queue:
-                row, col = queue.popleft()
-                current = grid[row][col]
-                print(current)
-                directions = [(1, 0),(-1, 0),(0, 1),(0, -1)]
-                rottable = False
-                for (dr, dc) in directions:
-                    r = row + dr
-                    c = col + dc
-                    if 0 <= r < rows and 0 <= c < cols and (r, c) not in visited and grid[r][c] != 0:
-                        if grid[r][c] == 1:
-                            fresh.add((r, c))
-                            if len(rotten) > 0:
-                                rottable = True
-                        elif grid[r][c] == 2:
-                            rotten.add((r, c))
-                        visited.add((r, c))
-                        queue.append((r, c))
-                print(rottable, len(rotten))
-                if rottable:
-                    total += 1
-            print(total, len(rotten), len(fresh))
-            return total if len(rotten) > 0 else -1 
-                
-            if len(rotten) == 0:
-                return -1
-            return -1 if len(rotten) == 0 else len(rotten) - len(fresh)
-
+        rows, cols = len(grid), len(grid[0])
+        queue = deque()
+        fresh_count = 0
+        time = 0
+        
         for r in range(rows):
             for c in range(cols):
-                if (r, c) not in visited and grid[r][c] != 0:
-                    res = bfs(r, c)
-                    if res == -1 and grid[r][c] != 2:
-                        return -1
-                    else:
-                        min_time = max(min_time, res)
-                    
+                if grid[r][c] == 2:
+                    queue.append((r, c, 0))
+                elif grid[r][c] == 1:
+                    fresh_count += 1
         
-        return min_time
+        while queue:
+            r, c, minutes = queue.popleft()
+            for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                    grid[nr][nc] = 2 
+                    fresh_count -= 1
+                    queue.append((nr, nc, minutes + 1))
+                    time = max(time, minutes + 1)
+        
+        return -1 if fresh_count > 0 else time
